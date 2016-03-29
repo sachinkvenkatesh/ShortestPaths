@@ -10,8 +10,10 @@ public class shortestPath {
 	 * Graph initialization. Set the distance, seen, parent and count variables
 	 * of all the vertices to appropriate values
 	 * 
-	 * @param g
-	 * @param src
+	 * @param g:
+	 *            Graph
+	 * @param src:
+	 *            Vertex - Source
 	 */
 	public static void initialize(Graph g, Vertex src) {
 		for (Vertex u : g) {
@@ -267,7 +269,7 @@ public class shortestPath {
 			System.out.println(cycle);
 			// if G' is not a DAG, find and print the cycle
 			Graph.findCycle(cycle);
-			printNegCycle(cycle);
+			printCycle(cycle);
 			return;
 		}
 
@@ -292,8 +294,11 @@ public class shortestPath {
 	}
 
 	/**
-	 * To print the number of the shortest path to each vertex from the source vertex
-	 * @param g
+	 * To print the number of the shortest path to each vertex from the source
+	 * vertex
+	 * 
+	 * @param g:
+	 *            Graph
 	 */
 	public static void printShortPaths(Graph g) {
 		for (Vertex u : g) {
@@ -305,10 +310,12 @@ public class shortestPath {
 	}
 
 	/**
+	 * To print the cycle in the G'
 	 * 
-	 * @param cycle
+	 * @param cycle:
+	 *            LinkedList<Edge> - edges of the cycle
 	 */
-	public static void printNegCycle(LinkedList<Edge> cycle) {
+	public static void printCycle(LinkedList<Edge> cycle) {
 		for (Edge e : cycle) {
 			System.out.println(e.From + " " + e.To + " " + e.Weight);
 		}
@@ -323,7 +330,7 @@ public class shortestPath {
 		// in = new Scanner(System.in);
 		// }
 
-		File input = new File("no30.txt");
+		File input = new File("no-10k.txt");
 		in = new Scanner(input);
 
 		Timer t = new Timer();
