@@ -21,6 +21,7 @@ public class Vertex implements Index, Comparator<Vertex> {
 	public int index;
 	public Color color;
 	public int count;
+	public int numOfShortestPaths;
 
 	/**
 	 * Constructor for the vertex
@@ -37,6 +38,7 @@ public class Vertex implements Index, Comparator<Vertex> {
 		index = 0;
 		color = Color.WHITE;
 		count = 0;
+		numOfShortestPaths = 0;
 	}
 
 	Vertex() {

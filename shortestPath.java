@@ -88,7 +88,7 @@ public class shortestPath {
 		//// return;
 		// System.out.println(topOrder);
 		// while (topOrder.peek() != src)
-		//	topOrder.pop();
+		// topOrder.pop();
 		Vertex u, v;
 		initialize(g, src);
 		while (!topOrder.isEmpty()) {
@@ -150,15 +150,12 @@ public class shortestPath {
 
 	public static void shortestPath(Graph g, Vertex src) {
 		ArrayDeque<Vertex> topOrder = new ArrayDeque<>();
-		// topOrder = Graph.topologicalOrder(g);
 
 		if (g.uniformW && g.nonNegative) {
 			BFS(g, src);
 			System.out.print("BFS ");
-		}
-		// else if (topOrder != null) {
-		else if (!Graph.DFSVisit(src, topOrder, false, true, false)) {
-			System.out.println(topOrder);
+		} else if (Graph.DFSVisit(src, topOrder, false, true)) {
+			// System.out.println(topOrder);
 			DAG(g, src, topOrder);
 			System.out.print("DAG ");
 		} else if (g.nonNegative) {
@@ -172,6 +169,48 @@ public class shortestPath {
 		}
 	}
 
+	public static void findShortestPaths(Graph g, Vertex src) {
+		Vertex v;
+		for (Vertex u : g) {
+			u.color = Vertex.Color.WHITE;
+			for (Edge e : u.Adj) {
+				v = e.otherEnd(u);
+				if (v.distance != u.distance + e.Weight)
+					e.edgeValid = false;
+			}
+		}
+
+		ArrayDeque<Vertex> stack = new ArrayDeque<>();
+		if (!Graph.DFSVisit(src, stack, false, true)) {
+			System.out.println("Non-positive cycle in graph. DAC is not applicable");
+			return;
+		}
+
+		int sumOfNumOfPaths = 0;
+		src.numOfShortestPaths = 1;
+		for (Vertex u : stack) {
+			for (Edge e : u.revAdj) {
+				if (!e.edgeValid)
+					continue;
+				v = e.otherEnd(u);
+				u.numOfShortestPaths += v.numOfShortestPaths;
+			}
+			sumOfNumOfPaths += u.numOfShortestPaths;
+		}
+
+		System.out.println("Level2");
+		System.out.println(sumOfNumOfPaths);
+		for (Vertex u : g) {
+			if (u.distance != Integer.MAX_VALUE)
+				if (u.parent != null)
+					System.out.println(u.name + " " + u.distance + " " + u.numOfShortestPaths);
+				else
+					System.out.println(u.name + " " + u.distance + " -");
+			else
+				System.out.println(u.name + " INF 0");
+		}
+	}
+
 	public static void main(String[] args) throws FileNotFoundException {
 		Scanner in;
 		// if (args.length > 0) {
@@ -181,12 +220,13 @@ public class shortestPath {
 		// in = new Scanner(System.in);
 		// }
 
-		File input = new File("lp3-l1-in4.txt");
+		File input = new File("lp3_level2.txt");
 		in = new Scanner(input);
 
 		Graph g = Graph.readGraph(in, true);
 		shortestPath(g, g.verts.get(1));
 		sumOfShortestPaths(g);
 		printVertices(g);
+		findShortestPaths(g, g.verts.get(1));
 	}
 }
