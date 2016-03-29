@@ -176,16 +176,20 @@ class Graph implements Iterable<Vertex> {
 	 */
 	static ArrayDeque<Vertex> DFSTop(Graph g, boolean isCycleAllowed, boolean isDirected) {
 		ArrayDeque<Vertex> stack = new ArrayDeque<>();
+		boolean cycleExist = false;
 
 		for (Vertex v : g)
 			v.color = Vertex.Color.WHITE;
 
 		for (Vertex v : g) {
 			if (v.color == Vertex.Color.WHITE) {
-				DFSVisit(v, stack, isCycleAllowed, isDirected);
+				cycleExist = DFSVisit(v, stack, isCycleAllowed, isDirected, cycleExist);
+				if (cycleExist)
+					break;
 			}
 		}
-		if (stack.size() == g.numNodes)
+		// if (stack.size() == g.numNodes)
+		if (!cycleExist)
 			return stack;
 		else
 			return null;
@@ -202,21 +206,27 @@ class Graph implements Iterable<Vertex> {
 	 * @throws CyclicGraphException
 	 *             exception to be thrown when cycle is encountered in the graph
 	 */
-	public static void DFSVisit(Vertex u, ArrayDeque<Vertex> stack, boolean isCycleAllowed, boolean isDirected) {
+	public static boolean DFSVisit(Vertex u, ArrayDeque<Vertex> stack, boolean isCycleAllowed, boolean isDirected,
+			boolean cycleExist) {
 		u.color = Vertex.Color.GRAY; // vertex being processed
 		for (Edge e : u.Adj) {
 			Vertex v = e.otherEnd(u);
 			if (v.color == Vertex.Color.WHITE) {
 				v.parent = u;
-				DFSVisit(v, stack, isCycleAllowed, isDirected);
+				cycleExist = DFSVisit(v, stack, isCycleAllowed, isDirected, cycleExist);
 			} else if (!isCycleAllowed
 					&& ((isDirected && v.color == Vertex.Color.GRAY) || (!isDirected && v != u.parent))) {
 				// To detect cycle in DAG
-				return;
+				cycleExist = true;
+				return true;
 			}
 		}
 
 		u.color = Vertex.Color.BLACK;// vertex processed
 		stack.push(u);
+		if (cycleExist)
+			return true;
+		else
+			return false;
 	}
 }
