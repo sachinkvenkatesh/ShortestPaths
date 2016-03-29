@@ -13,6 +13,7 @@ class Graph implements Iterable<Vertex> {
 	public int numNodes; // number of verices in the graph
 	public boolean nonNegative;
 	public boolean uniformW;
+	public int sumOfNumOfPaths;
 
 	/**
 	 * Constructor for Graph
@@ -26,6 +27,7 @@ class Graph implements Iterable<Vertex> {
 		verts.add(0, null);
 		nonNegative = true;
 		uniformW = true;
+		sumOfNumOfPaths = 0;
 		// create an array of Vertex objects
 		for (int i = 1; i <= size; i++)
 			verts.add(i, new Vertex(i));
@@ -176,6 +178,7 @@ class Graph implements Iterable<Vertex> {
 	 */
 	static ArrayDeque<Vertex> DFSTop(Graph g, boolean isCycleAllowed, boolean isDirected) {
 		ArrayDeque<Vertex> stack = new ArrayDeque<>();
+		LinkedList<Edge> cycle = new LinkedList<>();
 		boolean cycleExist = false;
 
 		for (Vertex v : g)
@@ -183,13 +186,13 @@ class Graph implements Iterable<Vertex> {
 
 		for (Vertex v : g) {
 			if (v.color == Vertex.Color.WHITE) {
-				cycleExist = DFSVisit(v, stack, isCycleAllowed, isDirected);
+				cycleExist = DFSVisit(v, stack, isCycleAllowed, isDirected, cycle);
 				if (!cycleExist)
 					break;
 			}
 		}
 		// if (stack.size() == g.numNodes)
-		if (cycleExist)
+		if (cycleExist && stack.size() == g.numNodes)
 			return stack;
 		else
 			return null;
@@ -203,10 +206,19 @@ class Graph implements Iterable<Vertex> {
 	 * @param stack:
 	 *            ArrayDeque<Vertex> - to store the topological order of
 	 *            vertices
+	 * @param isCycleAllowed:
+	 *            boolean - true if cycle can exist in the given graph, else
+	 *            false
+	 * @param isDirected:
+	 *            boolean - true if the graph is directed, else false
+	 * @param cycle:
+	 *            LinkedList<Edge> - to store the cycle, if there is no DAG
+	 * 
 	 * @throws CyclicGraphException
 	 *             exception to be thrown when cycle is encountered in the graph
 	 */
-	public static boolean DFSVisit(Vertex u, ArrayDeque<Vertex> stack, boolean isCycleAllowed, boolean isDirected) {
+	public static boolean DFSVisit(Vertex u, ArrayDeque<Vertex> stack, boolean isCycleAllowed, boolean isDirected,
+			LinkedList<Edge> cycle) {
 		u.color = Vertex.Color.GRAY; // vertex being processed
 		for (Edge e : u.Adj) {
 			if (!e.edgeValid)
@@ -214,11 +226,15 @@ class Graph implements Iterable<Vertex> {
 			Vertex v = e.otherEnd(u);
 			if (v.color == Vertex.Color.WHITE) {
 				v.parent = u;
-				if (!DFSVisit(v, stack, isCycleAllowed, isDirected))
+
+				if (!DFSVisit(v, stack, isCycleAllowed, isDirected, cycle)) {
+					cycle.add(e);
 					return false;
+				}
 			} else if (!isCycleAllowed
 					&& ((isDirected && v.color == Vertex.Color.GRAY) || (!isDirected && v != u.parent))) {
-				// To detect cycle in DAG
+				// To detect cycle and add those edges into the list
+				cycle.add(e);
 				return false;
 			}
 		}
@@ -226,5 +242,33 @@ class Graph implements Iterable<Vertex> {
 		u.color = Vertex.Color.BLACK;// vertex processed
 		stack.push(u);
 		return true;
+	}
+
+	/**
+	 * To find the cycle in the current Graph
+	 * 
+	 * @param cycle
+	 */
+	public static void findCycle(LinkedList<Edge> cycle) {
+		boolean remove = false;
+		Vertex first;
+		Edge e;
+		Iterator<Edge> itr = cycle.iterator();
+		// get the first edge, the edge.To vertex is where the cycle starts
+		if (itr.hasNext())
+			first = itr.next().To;
+		else
+			return;
+		// to get the cycle - go till the edge having e.To == the vertex
+		// obtained above i.e start and end are same vertex and hence a cycle.
+		// Remove all other edges thereafter(Including the edge with e.To == the
+		// start vertex)
+		while (itr.hasNext()) {
+			e = itr.next();
+			if (e.To.name == first.name)
+				remove = true;
+			if (remove)
+				itr.remove();
+		}
 	}
 }
